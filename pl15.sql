@@ -70,6 +70,11 @@ INSERT INTO historico VALUES(3,4,'1DBZ','JSE',2009,16.0);
 INSERT INTO historico VALUES(2,3,'1NHA','JSE',2010,9.0);
 INSERT INTO historico VALUES(3,5,'2DBZ','MRC',2011,11.0);
 INSERT INTO historico VALUES(2,5,'2NHA','MRC',2012,12.0);
+--INSERT INTO historico VALUES(2,4,'2NHA','MRC',2050,12.0);
+
+--SELECT * FROM HISTORICO;
+
+--DELETE HISTORICO WHERE ANO = 2050;
 
 --SELECTS
 
@@ -79,6 +84,42 @@ WHERE H.COD_ALUNO = A.COD_ALUNO
 AND H.COD_PROF LIKE 'MRC'
 AND H.cod_aluno IN (SELECT cod_aluno FROM HISTORICO H
   WHERE H.COD_PROF LIKE 'JSE'
-  AND H.ANO = 2009
-  OR H.ANO = 2010);
+  AND (H.ANO = 2009
+  OR H.ANO = 2010));
 
+--2
+SELECT morada FROM aluno WHERE cidade = 'Porto'
+UNION
+SELECT morada FROM professor WHERE cidade = 'Porto';
+
+--3
+SELECT a.nome, p.nome FROM aluno A, professor P, historico H, disciplina D
+WHERE H.COD_ALUNO = A.COD_ALUNO
+AND P.COD_PROF = H.COD_PROF
+AND H.COD_DISC = D.COD_DISC  
+AND D.CARGA_HORARIA < 60.00;
+
+--4
+SELECT DISTINCT nome FROM professor P, historico H 
+WHERE P.COD_PROF = H.COD_PROF
+AND H.cod_prof NOT IN (
+  SELECT cod_prof FROM historico H, disciplina D
+  WHERE H.COD_DISC = D.COD_DISC
+  AND D.CARGA_HORARIA >= 60);
+  
+--5
+SELECT A.cod_aluno, A.nome FROM aluno A
+MINUS
+SELECT DISTINCT A.cod_aluno, A.nome FROM aluno A, historico H
+WHERE H.COD_ALUNO = A.COD_ALUNO
+AND H.nota < 10;
+
+--6
+SELECT A.cod_aluno FROM aluno A
+WHERE NOT EXISTS ( 
+  SELECT H.cod_disc FROM professor P, historico H 
+  WHERE P.cod_prof = H.cod_prof
+  AND P.nome LIKE 'Marcos'
+  AND cod_disc NOT IN (
+    SELECT H.cod_disc FROM historico H
+    WHERE A.cod_aluno = H.cod_aluno));
