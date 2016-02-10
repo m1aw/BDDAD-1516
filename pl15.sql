@@ -70,11 +70,11 @@ INSERT INTO historico VALUES(3,4,'1DBZ','JSE',2009,16.0);
 INSERT INTO historico VALUES(2,3,'1NHA','JSE',2010,9.0);
 INSERT INTO historico VALUES(3,5,'2DBZ','MRC',2011,11.0);
 INSERT INTO historico VALUES(2,5,'2NHA','MRC',2012,12.0);
---INSERT INTO historico VALUES(2,4,'2NHA','MRC',2050,12.0);
+--INSERT INTO historico VALUES(4,5,'TEST','AJO',2010,11.0);
 
---SELECT * FROM HISTORICO;
+--SELECT * FROM HISTORICO WHERE ANO = 2010;
 
---DELETE HISTORICO WHERE ANO = 2050;
+--DELETE HISTORICO WHERE cod_turma = 'TEST';
 
 --SELECTS
 
@@ -123,3 +123,77 @@ WHERE NOT EXISTS (
   AND cod_disc NOT IN (
     SELECT H.cod_disc FROM historico H
     WHERE A.cod_aluno = H.cod_aluno));
+    
+--7
+SELECT DISTINCT A.cod_aluno, A.nome FROM aluno A, historico H
+WHERE H.COD_ALUNO = A.COD_ALUNO
+GROUP BY  A.cod_aluno, A.nome
+HAVING MIN(H.nota) > (
+  SELECT MAX(H.nota) FROM aluno A, historico H
+  WHERE A.cod_aluno = H.COD_ALUNO
+  AND A.cod_aluno = 2);
+  
+--8
+SELECT P.nome, D.nome_d, AVG(H.nota) FROM PROFESSOR P, DISCIPLINA D, HISTORICO H
+WHERE H.COD_DISC = D.COD_DISC
+AND P.COD_PROF = H.COD_PROF
+AND H.ano = 2010
+GROUP BY P.nome, D.nome_d;
+
+--9
+SELECT A.cod_aluno, A.nome FROM aluno A, historico H, disciplina D
+WHERE H.COD_ALUNO = A.COD_ALUNO
+AND D.COD_DISC = H.COD_DISC
+AND H.ANO = 2010
+AND D.NOME_D = 'BDDAD'
+AND H.nota < (
+  SELECT AVG(H.nota) FROM aluno A, historico H
+  WHERE A.cod_aluno = H.COD_ALUNO
+  AND H.ANO = 2010);
+  
+--10
+SELECT D.cod_disc, D.nome_d, AVG(H.nota) FROM historico H, disciplina D
+WHERE H.COD_DISC = D.COD_DISC
+GROUP BY  D.cod_disc, D.nome_d
+HAVING AVG(H.nota) >= 10;
+
+--11
+SELECT D.cod_disc, D.nome_D FROM historico H, disciplina D
+WHERE H.COD_DISC = D.COD_DISC
+GROUP BY D.cod_disc, D.nome_D
+HAVING AVG(H.nota) = (
+  SELECT MAX(AVG(H.nota)) FROM historico H
+  GROUP BY cod_disc);
+  
+--12
+SELECT D.cod_disc, D.nome_d FROM historico H, disciplina D
+WHERE H.COD_DISC = D.COD_DISC
+GROUP BY D.cod_disc, D.nome_d
+HAVING AVG(H.nota) < (
+  SELECT AVG(H.nota) FROM historico H, disciplina D
+  WHERE H.COD_DISC = D.COD_DISC
+  AND D.nome_d = 'BDDAD');
+  
+--13
+SELECT A.cod_aluno, A.nome FROM historico H, aluno A
+WHERE A.COD_ALUNO = H.COD_ALUNO
+AND ano = 2010
+AND H.nota < 10
+GROUP BY A.cod_aluno, A.nome, H.ano
+HAVING count (A.cod_aluno) > 2;
+
+--14
+SELECT A.cod_aluno, A.nome FROM historico H, aluno A
+WHERE A.COD_ALUNO = H.COD_ALUNO
+AND H.nota < 10
+GROUP BY A.cod_aluno, A.nome, H.ano
+HAVING count (A.cod_aluno) > 2;
+
+--15
+SELECT P.nome, D.nome_d FROM historico H, disciplina D, professor P
+WHERE H.cod_disc = D.cod_disc
+AND P.cod_prof = H.cod_prof
+AND H.ano = 2010
+AND H.nota < 10
+GROUP BY P.nome, D.nome_d
+HAVING COUNT(H.cod_aluno) > 2;
